@@ -1,0 +1,9 @@
+body, * {
+  font-family: sans-serif;
+}
+
+.result-item-image {
+  height: 180px;
+  width: auto;
+  object-fit: cover;
+}
