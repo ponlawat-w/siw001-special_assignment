@@ -6,6 +6,7 @@ $(document).ready(() => {
     el: '#app',
     data: {
       loading: false,
+      error: null,
       resultItems: []
     },
     methods: {
@@ -27,12 +28,27 @@ $(document).ready(() => {
       },
       search: function() {
         this.loading = true;
-        this.query().then(function(results) {
-          this.resultItems = results.items.map(x => new ResultItem(x));
+        this.resultItems = [];
+        this.error = null;
+
+        const errorHandler = function(error) {
           this.loading = false;
-        }.bind(this)).catch(function(error) {
+          if (error.responseJSON && error.responseJSON.error) {
+            this.error = error.responseJSON.error;
+          } else if (this.statusText) {
+            this.error = (this.status ? this.status + ' - ' : '') + this.statusText;
+          } else {
+            this.error = 'Error';
+          }
+        }.bind(this);
+
+        this.query().then(function(result) {
           this.loading = false;
-        }.bind(this));
+          if (!result.success) {
+            return;
+          }
+          this.resultItems = result.items.map(x => new ResultItem(x));
+        }.bind(this)).catch(errorHandler);
       }
     },
     mounted: function() {

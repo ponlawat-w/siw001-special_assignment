@@ -26,6 +26,10 @@
             </div>
             <div v-else id="search-results">
               <h2>Search Results</h2>
+              <div v-if="error" class="alert alert-danger">
+                <strong>Error:</strong>
+                {{error}}
+              </div>
               <div class="row">
                 <div v-for="item in resultItems" class="col-12 col-sm-6 col-lg-4 col-xl-3">
                   <div class="card my-3">
