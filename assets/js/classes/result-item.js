@@ -50,8 +50,16 @@ export class ResultItem {
     return this._creators ? this._creators : [];
   }
 
+  get hasPreview() {
+    return this._previews.length ? true : false;
+  }
+
   get previews() {
-    return this._previews ? this._previews : [];
+    return this.hasPreview ? this._previews : [];
+  }
+
+  get preview() {
+    return this.hasPreview ? this._previews[0] : undefined;
   }
 
   get timespanLabels() {
