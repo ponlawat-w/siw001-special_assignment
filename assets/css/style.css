@@ -7,3 +7,8 @@ body, * {
   width: auto;
   object-fit: cover;
 }
+
+.pagination {
+  display: flex;
+  flex-flow: wrap;
+}

@@ -30,7 +30,19 @@
                 <strong>Error:</strong>
                 {{error}}
               </div>
+              <div v-if="!error && (!resultItems || !resultItems.length)" class="alert alert-dark">
+                There are no results to display.
+              </div>
               <div class="row">
+                <div class="col-12 text-right">
+                  <strong>
+                    Page #{{page}} of {{pages}}
+                  </strong>
+                  -
+                  <small>
+                    Displaying {{resultItems.length}} result(s) from {{totalResults}} in total.
+                  </small>
+                </div>
                 <div v-for="item in resultItems" class="col-12 col-sm-6 col-lg-4 col-xl-3">
                   <div class="card my-3">
                     <img v-if="item.hasPreview" :src="item.preview" class="result-item-image card-img-top">
@@ -46,6 +58,25 @@
                   </div>
                 </div>
               </div>
+              <nav v-if="pagination" class="d-flex justify-content-center">
+                <ul class="pagination">
+                  <li v-if="page > 1" class="page-item">
+                    <a href="javascript:void(0);" class="page-link" @click="setPage(page - 1);">
+                      &lt;
+                    </a>
+                  </li>
+                  <li v-for="p in pagination.getPagesArray()" class="page-item" :class="p.class">
+                    <a href="javascript:void(0);" class="page-link" @click="setPage(p.page);">
+                      {{p.page}}
+                    </a>
+                  </li>
+                  <li v-if="page < pagination.pages" class="page-item">
+                    <a href="javascript:void(0);" class="page-link" @click="setPage(page + 1);">
+                      &gt;
+                    </a>
+                  </li>
+                </ul>
+              </nav>
             </div>
           </div>
         </div>
