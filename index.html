@@ -65,7 +65,7 @@
                       &lt;
                     </a>
                   </li>
-                  <li v-for="p in pagination.getPagesArray()" class="page-item" :class="p.class">
+                  <li v-for="p in pagination.getPagesArray(true)" class="page-item" :class="p.class">
                     <a href="javascript:void(0);" class="page-link" @click="setPage(p.page);">
                       {{p.page}}
                     </a>
@@ -76,6 +76,12 @@
                     </a>
                   </li>
                 </ul>
+              </nav>
+              <nav v-if="pagination" class="text-center">
+                Go to page
+                <select class="form-control d-inline w-auto" v-model="page" @change="selectPage();">
+                  <option v-for="p in pagination.getPagesArray(false)" :value="p.page">{{p.page}}</option>
+                </select>
               </nav>
             </div>
           </div>

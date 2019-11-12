@@ -8,7 +8,7 @@ export class Pagination {
     return this._pages;
   }
 
-  getPagesArray() {
+  getPagesArray(skip = true) {
     const pages = [];
 
     const shouldSkip = p => {
@@ -28,7 +28,7 @@ export class Pagination {
     };
 
     for (let i = 1; i <= this._pages; i++) {
-      if (shouldSkip(i)) {
+      if (skip && shouldSkip(i)) {
         if (!pages.length || !pages[pages.length - 1].isSkippingPage) {
           pages.push({
             page: '…',
