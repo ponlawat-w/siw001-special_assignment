@@ -1,3 +1,5 @@
+import { Coordinate } from './coordinate.js';
+
 const getValuesFromLangAware = (rawItem, propertyName, language = 'en') => {
   return rawItem[propertyName] && rawItem[propertyName][language] ? rawItem[propertyName][language] : undefined;
 }
@@ -20,6 +22,17 @@ export class ResultItem {
     this._previews = rawItem.edmPreview;
     this._timespanLabels = getValuesFromLangAware(rawItem, 'edmTimespanLabelLangAware');
     this._title = getValueFromLangAware(rawItem, 'dcTitleLangAware');
+
+    if (rawItem.edmPlaceLatitude && rawItem.edmPlaceLongitude) {
+      this._coordinates = [];
+      for (let i = 0; i < rawItem.edmPlaceLatitude.length; i++) {
+        if (!rawItem.edmPlaceLongitude[i]) {
+          break;
+        }
+
+        this._coordinates.push(new Coordinate(rawItem.edmPlaceLatitude[i], rawItem.edmPlaceLongitude[i]));
+      }
+    }
   }
 
   get id() {
@@ -68,5 +81,30 @@ export class ResultItem {
 
   get title() {
     return this._title ? this._title : 'N/A';
+  }
+
+  get coordinates() {
+    return this._coordinates ? this._coordinates : [];
+  }
+
+  get hasCoordinates() {
+    return this.coordinates && this.coordinates.length;
+  }
+
+  getMarkers(L) {
+    if (this.hasCoordinates) {
+      const img = this.hasPreview ? `<p><img src="${this.preview}" class="popup-img"></p>` : '';
+      const coordinates = this.coordinates;
+      const markers = [];
+      for (let i = 0; i < coordinates.length; i++) {
+        const marker = L.marker([coordinates[i].latitude, coordinates[i].longitude]);
+        marker.bindPopup(`${img}<div class="font-weight-bold">${this.title}</div>`, {
+          maxWidth: 'auto'
+        });
+        markers.push(marker);
+      }
+      return markers;
+    }
+    return [];
   }
 }

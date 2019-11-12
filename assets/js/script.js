@@ -12,7 +12,10 @@ $(document).ready(() => {
       totalResults: 0,
       itemsPerPage: 12,
       page: 1,
-      pagination: null
+      pagination: null,
+      view: 'list',
+      map: null,
+      markersGroup: null
     },
     computed: {
       pages: function() {
@@ -25,11 +28,9 @@ $(document).ready(() => {
           if (!params.wskey) {
             params.wskey = CONFIG.apiKey;
           }
-          if (!params.qf) {
-            params.qf = 'provider_aggregation_edm_dataProvider:"Thyssen-Bornemisza Museum"';
-          }
           if (!params.query) {
-            params.query = '*';
+            params.query = 'Thyssen-Bornemisza';
+            // params.query = 'pl_wgs84_pos_lat:[27+TO+62]+AND+pl_wgs84_pos_long:[-36+TO+40]+AND+Thyssen-Bornemisza';
           }
           if (!params.rows) {
             params.rows = this.itemsPerPage;
@@ -66,6 +67,7 @@ $(document).ready(() => {
           this.resultItems = result.items.map(x => new ResultItem(x));
           this.totalResults = result.totalResults;
           this.pagination = new Pagination(result, this.itemsPerPage, this.page);
+          this.updateMarkers();
         }.bind(this)).catch(errorHandler);
       },
       setPage: function(page) {
@@ -74,10 +76,68 @@ $(document).ready(() => {
       },
       selectPage: function() {
         this.setPage(this.page);
+      },
+      openItem: function(item) {
+      },
+      setView: function(view) {
+        if (view === 'list' || view === 'map') {
+          if (this.view === 'map' && view !== 'map') {
+            this.destroyMap();
+          }
+          this.view = view;
+        }
+      },
+      initiateMap: function() {
+        if (!this.map) {
+          this.map = L.map('map', {
+            center: [40.4160447, -3.6971141],
+            zoom: 6
+          });
+
+          this.map.addLayer(L.tileLayer(`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${CONFIG.mapboxAccessToken}`, {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox.streets',
+            accessToken: CONFIG.mapboxAccessToken
+          }));
+          this.updateMarkers();
+        }
+      },
+      destroyMap: function() {
+        this.map.remove();
+        this.map = null;
+      },
+      updateMarkers: function() {
+        if (!this.map) {
+          return;
+        }
+        if (this.markersGroup) {
+          this.map.removeLayer(this.markersGroup);
+          this.markersGroup = null;
+        }
+
+        const markers = [];
+        for (let i = 0; i < this.resultItems.length; i++) {
+          const itemMarkers = this.resultItems[i].getMarkers(L);
+          for (let j = 0; j < itemMarkers.length; j++) {
+            markers.push(itemMarkers[j]);
+          }
+        }
+
+        if (markers.length) {
+          this.markersGroup = new L.featureGroup(markers);
+          this.map.addLayer(this.markersGroup);
+          this.map.fitBounds(this.markersGroup.getBounds());
+        }
       }
     },
     mounted: function() {
       this.search();
+    },
+    updated: function() {
+      if (this.view === 'map' && !this.map && document.getElementById('map')) {
+        this.initiateMap();
+      }
     }
   });
 });

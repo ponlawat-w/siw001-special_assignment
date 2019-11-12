@@ -12,3 +12,17 @@ body, * {
   display: flex;
   flex-flow: wrap;
 }
+
+.popup-img {
+  height: 200px;
+  width: auto;
+}
+
+#map-loading {
+  width: 95%;
+}
+
+#map {
+  width: 95%;
+  height: 70vh;
+}

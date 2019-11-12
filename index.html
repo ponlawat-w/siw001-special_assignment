@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Thyssen-Bornemisza Museum Collection</title>
     <link rel="stylesheet" type="text/css" href="lib/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/css/leaflet.css">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/spinner.css">
     <script src="lib/js/vue.min.js"></script>
     <script src="lib/js/jquery-3.4.1.min.js"></script>
     <script src="lib/js/bootstrap.min.js"></script>
+    <script src="lib/js/leaflet.js"></script>
     <script type="module" src="assets/js/script.js"></script>
   </head>
   <body>
@@ -18,23 +21,15 @@
       </nav>
       <div id="content" class="container-fluid">
         <div class="row">
-          <div class="container-fluid p-3">
-            <div v-if="loading" class="text-center">
-              <h3>
-                Loading…
-              </h3>
+          <div class="container-fluid p-3" id="search-results">
+            <h2>Search Results</h2>
+            <div v-if="error" class="alert alert-danger">
+              <strong>Error:</strong>
+              {{error}}
             </div>
-            <div v-else id="search-results">
-              <h2>Search Results</h2>
-              <div v-if="error" class="alert alert-danger">
-                <strong>Error:</strong>
-                {{error}}
-              </div>
-              <div v-if="!error && (!resultItems || !resultItems.length)" class="alert alert-dark">
-                There are no results to display.
-              </div>
-              <div class="row">
-                <div class="col-12 text-right">
+            <div class="row">
+              <div class="col-12 text-right">
+                <span v-if="!loading">
                   <strong>
                     Page #{{page}} of {{pages}}
                   </strong>
@@ -42,23 +37,63 @@
                   <small>
                     Displaying {{resultItems.length}} result(s) from {{totalResults}} in total.
                   </small>
+                </span>
+                <span v-else>
+                  &nbsp;
+                </span>
+              </div>
+              <div class="col-12">
+                <ul class="nav nav-pills">
+                  <li class="nav-item">
+                    <a href="javascript:void(0);" class="nav-link" :class="{active: view == 'list'}" @click="setView('list');">
+                      List View
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="javascript:void(0);" class="nav-link" :class="{active: view == 'map'}" @click="setView('map');">
+                      Map View
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div v-if="view == 'list' && loading" class="col-12 text-center py-3">
+                <div class="spinner"></div>
+                <h2>Loading…</h2>
+              </div>
+              <div v-if="!loading && !error && (!resultItems || !resultItems.length)" class="col-12">
+                <div class="alert alert-dark">
+                  There are no results to display.
                 </div>
-                <div v-for="item in resultItems" class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                  <div class="card my-3">
-                    <img v-if="item.hasPreview" :src="item.preview" class="result-item-image card-img-top">
-                    <div class="card-body">
-                      <h5 class="card-title">{{item.title}}</h5>
-                      <p>
-                        <span v-for="concept in item.concepts" class="badge badge-secondary mx-1">{{concept}}</span>
-                      </p>
-                      <div class="text-right">
-                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary">Read more »</a>
-                      </div>
+              </div>
+              <div v-if="view == 'list'" v-for="item in resultItems" class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card my-3">
+                  <img v-if="item.hasPreview" :src="item.preview" class="result-item-image card-img-top">
+                  <div class="card-body">
+                    <h5 class="card-title">{{item.title}}</h5>
+                    <p>
+                      <span v-for="concept in item.concepts" class="badge badge-secondary mx-1">{{concept}}</span>
+                    </p>
+                    <div class="text-right">
+                      <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary"
+                        @click="openItem(item);">Read more »</a>
                     </div>
                   </div>
                 </div>
               </div>
-              <nav v-if="pagination" class="d-flex justify-content-center">
+              <div v-if="view == 'map'" class="col-12 text-center pb-3">
+                <div id="map-loading" class="justify-content-center text-right">
+                  <span v-if="loading">
+                    Loading data…
+                  </span>
+                  <span v-else>
+                    &nbsp;
+                  </span>
+                </div>
+                <div id="map" class="m-auto"></div>
+              </div>
+            </div>
+            <div v-if="pagination && (!loading || view == 'map')">
+              <nav class="d-flex justify-content-center">
                 <ul class="pagination">
                   <li v-if="page > 1" class="page-item">
                     <a href="javascript:void(0);" class="page-link" @click="setPage(page - 1);">
@@ -77,7 +112,7 @@
                   </li>
                 </ul>
               </nav>
-              <nav v-if="pagination" class="text-center">
+              <nav class="text-center">
                 Go to page
                 <select class="form-control d-inline w-auto" v-model="page" @change="selectPage();">
                   <option v-for="p in pagination.getPagesArray(false)" :value="p.page">{{p.page}}</option>

@@ -1,3 +1,4 @@
 export const CONFIG = {
-  apiKey: ''
+  apiKey: '',
+  mapboxAccessToken: ''
 };
