@@ -1,6 +1,7 @@
 import { CONFIG } from '../../settings.js';
 import { ResultItem } from './classes/result-item.js';
 import { Pagination } from './classes/pagination.js';
+import { Coordinate } from './classes/coordinate.js';
 
 $(document).ready(() => {
   var app = new Vue({
@@ -15,7 +16,9 @@ $(document).ready(() => {
       pagination: null,
       view: 'list',
       map: null,
-      markersGroup: null
+      markersGroup: null,
+      searchByLocation: false,
+      searchLocations: []
     },
     computed: {
       pages: function() {
@@ -43,6 +46,19 @@ $(document).ready(() => {
           return $.get(url).then(results => resolve(results)).catch(error => reject(error));
         }.bind(this));
       },
+      buildKeywords: function() {
+        const keywords = ['Thyssen-Bornemisza'];
+
+        if (this.searchByLocation && this.searchLocations.length > 1) {
+          const lats = [this.searchLocations[0].latitude, this.searchLocations[1].latitude];
+          const lngs = [this.searchLocations[0].longitude, this.searchLocations[1].longitude];
+
+          keywords.push(`pl_wgs84_pos_lat:[${Math.min(...lats)}+TO+${Math.max(...lats)}]`);
+          keywords.push(`pl_wgs84_pos_long:[${Math.min(...lngs)}+TO+${Math.max(...lngs)}]`);
+        }
+
+        return keywords;
+      },
       search: function() {
         this.loading = true;
         this.resultItems = [];
@@ -59,7 +75,12 @@ $(document).ready(() => {
           }
         }.bind(this);
 
-        this.query().then(function(result) {
+        const queryKeyword = this.buildKeywords().join('+AND+');
+        const params = {
+          query: queryKeyword
+        };
+
+        this.query(params).then(function(result) {
           this.loading = false;
           if (!result.success) {
             return;
@@ -94,6 +115,8 @@ $(document).ready(() => {
             zoom: 6
           });
 
+          this.map.on('moveend', this.mapMoved.bind(this));
+
           this.map.addLayer(L.tileLayer(`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${CONFIG.mapboxAccessToken}`, {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
             maxZoom: 18,
@@ -101,6 +124,15 @@ $(document).ready(() => {
             accessToken: CONFIG.mapboxAccessToken
           }));
           this.updateMarkers();
+        }
+      },
+      mapMoved: function() {
+        if (this.searchByLocation) {
+          const bounds = this.map.getBounds();
+          const northEast = bounds.getNorthEast();
+          const southWest = bounds.getSouthWest();
+          this.searchLocations = [new Coordinate(northEast.lat, northEast.lng), new Coordinate(southWest.lat, southWest.lng)];
+          this.search();
         }
       },
       destroyMap: function() {
@@ -127,8 +159,20 @@ $(document).ready(() => {
         if (markers.length) {
           this.markersGroup = new L.featureGroup(markers);
           this.map.addLayer(this.markersGroup);
-          this.map.fitBounds(this.markersGroup.getBounds());
+          if (!this.searchByLocation) {
+            this.map.fitBounds(this.markersGroup.getBounds());
+          }
         }
+      },
+      enableSearchByLocation: function() {
+        this.searchByLocation = true;
+        this.page = 1;
+        this.mapMoved();
+      },
+      disableSearchByLocation: function() {
+        this.searchByLocation = false;
+        this.searchLocations = [];
+        this.search();
       }
     },
     mounted: function() {

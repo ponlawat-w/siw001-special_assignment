@@ -18,11 +18,15 @@ body, * {
   width: auto;
 }
 
+.view-panel {
+  clear: both;
+}
+
 #map-loading {
   width: 95%;
 }
 
 #map {
   width: 95%;
-  height: 70vh;
+  height: 65vh;
 }
