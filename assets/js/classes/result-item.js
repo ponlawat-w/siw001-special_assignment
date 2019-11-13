@@ -1,11 +1,18 @@
 import { Coordinate } from './coordinate.js';
 
-const getValuesFromLangAware = (rawItem, propertyName, language = 'en') => {
-  return rawItem[propertyName] && rawItem[propertyName][language] ? rawItem[propertyName][language] : undefined;
+const getValuesFromLangAware = (rawItem, propertyName, backupProperty = undefined, language = 'en') => {
+  const returnValues = rawItem[propertyName] && rawItem[propertyName][language] ? rawItem[propertyName][language] : undefined;
+  if (returnValues) {
+    return returnValues;
+  }
+  if (backupProperty && rawItem[backupProperty]) {
+    return rawItem[backupProperty];
+  }
+  return undefined;
 }
 
-const getValueFromLangAware = (rawItem, propertyName, language = 'en', index = 0) => {
-  const values = getValuesFromLangAware(rawItem, propertyName, language);
+const getValueFromLangAware = (rawItem, propertyName, backupProperty = undefined, language = 'en', index = 0) => {
+  const values = getValuesFromLangAware(rawItem, propertyName, backupProperty, language);
   return values && values[index] ? values[index] : undefined;
 }
 
@@ -21,7 +28,7 @@ export class ResultItem {
     this._creators = rawItem.dcCreator;
     this._previews = rawItem.edmPreview;
     this._timespanLabels = getValuesFromLangAware(rawItem, 'edmTimespanLabelLangAware');
-    this._title = getValueFromLangAware(rawItem, 'dcTitleLangAware');
+    this._title = getValueFromLangAware(rawItem, 'dcTitleLangAware', 'title');
 
     if (rawItem.edmPlaceLatitude && rawItem.edmPlaceLongitude) {
       this._coordinates = [];
@@ -64,7 +71,7 @@ export class ResultItem {
   }
 
   get hasPreview() {
-    return this._previews.length ? true : false;
+    return this._previews && this._previews.length ? true : false;
   }
 
   get previews() {
