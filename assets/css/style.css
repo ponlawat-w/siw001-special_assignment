@@ -30,3 +30,14 @@ body, * {
   width: 95%;
   height: 65vh;
 }
+
+.item-preview {
+  height: 60vh;
+  width: auto;
+}
+
+.item-preview-thumbnail {
+  height: 50px;
+  width: 70px;
+  object-fit: cover;
+}

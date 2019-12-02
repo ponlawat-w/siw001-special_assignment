@@ -1,20 +1,5 @@
 import { Coordinate } from './coordinate.js';
-
-const getValuesFromLangAware = (rawItem, propertyName, backupProperty = undefined, language = 'en') => {
-  const returnValues = rawItem[propertyName] && rawItem[propertyName][language] ? rawItem[propertyName][language] : undefined;
-  if (returnValues) {
-    return returnValues;
-  }
-  if (backupProperty && rawItem[backupProperty]) {
-    return rawItem[backupProperty];
-  }
-  return undefined;
-}
-
-const getValueFromLangAware = (rawItem, propertyName, backupProperty = undefined, language = 'en', index = 0) => {
-  const values = getValuesFromLangAware(rawItem, propertyName, backupProperty, language);
-  return values && values[index] ? values[index] : undefined;
-}
+import { getValuesFromLangAware, getValueFromLangAware } from '../functions/lang-aware.js';
 
 export class ResultItem {
   constructor(rawItem) {
@@ -84,6 +69,29 @@ export class ResultItem {
 
   get timespanLabels() {
     return this._timespanLabels ? this._timespanLabels : [];
+  }
+
+  get bestTimespanLabel() {
+    if (!this.timespanLabels.length) {
+      return undefined;
+    }
+    const centuries = this._timespanLabels.filter(l => l.toLowerCase().endsWith('century'));
+    if (!centuries.length) {
+      return this.timespanLabels.reduce((best, label) => !best || label.length < best.length ? label : best, null);
+    }
+    return centuries.reduce((best, century) => !best || century.length > best.length ? century : best, null);
+  }
+
+  get characteristicsText() {
+    const characteristics = [];
+    const timespan = this.bestTimespanLabel;
+    if (timespan) {
+      characteristics.push(timespan);
+    }
+    if (this.countries && this.countries.length) {
+      characteristics.push(...this.countries);
+    }
+    return characteristics.join(', ');
   }
 
   get title() {

@@ -132,6 +132,49 @@
           </div><!-- Close #search-results -->
         </div><!-- Close .row -->
       </div><!-- Clse #content -->
+      <div v-if="selectedItem.resultItem">
+        <div class="modal d-block in show">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">{{selectedItem.resultItem.title}}</h5>
+                <button v-if="!selectedItem.loading" type="button" class="close" @click="closeItem();">
+                  ×
+                </button>
+              </div>
+              <div class="modal-body">
+                <div v-if="selectedItem.resultItem.hasPreview" class="text-center">
+                  <div class="my-3">
+                    <img class="item-preview" :src="selectedItem.resultItem.previews[selectedItem.previewIndex]">
+                  </div>
+                  <div class="my-3" v-if="selectedItem.resultItem.previews.length > 1">
+                    <a href="javascript:void(0);" v-for="(preview, index) in selectedItem.resultItem.previews"
+                      @click="setItemPreview(index);">
+                      <img class="item-preview-thumbnail" :src="preview">
+                    </a>
+                  </div>
+                </div>
+                <h3>{{selectedItem.resultItem.title}}</h3>
+                <div class="small ml-5" v-if="selectedItem.resultItem.characteristicsText">
+                  {{selectedItem.resultItem.characteristicsText}}
+                </div>
+                <div v-if="selectedItem.loading">
+                  <p>Loading…</p>
+                </div>
+                <div v-else-if="selectedItem.detail">
+                  <div v-for="concept in selectedItem.detail.concepts">
+                    <h5 v-if="concept.labels.length">・{{concept.labels.join(' ')}}</h5>
+                    <p v-for="note in concept.notes" class="text-justify">
+                      {{note}}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-backdrop show"></div>
+      </div>
     </div><!-- Close #app -->
   </body>
 </html>

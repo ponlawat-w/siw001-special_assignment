@@ -2,6 +2,7 @@ import { queryMethods } from './methods/queries.js';
 import { paginationMethods } from './methods/paginations.js';
 import { mapMethods } from './methods/maps.js';
 import { viewMethods } from './methods/views.js';
+import { itemMethods } from './methods/items.js';
 
 $(document).ready(() => {
   var app = new Vue({
@@ -18,7 +19,13 @@ $(document).ready(() => {
       map: null,
       markersGroup: null,
       searchByLocation: false,
-      searchLocations: []
+      searchLocations: [],
+      selectedItem: {
+        previewIndex: 0,
+        resultItem: null,
+        fullDetail: null,
+        loading: false
+      }
     },
     computed: {
       pages: function() {
@@ -30,8 +37,7 @@ $(document).ready(() => {
       ...paginationMethods,
       ...mapMethods,
       ...viewMethods,
-      openItem: function(item) {
-      }
+      ...itemMethods
     },
     mounted: function() {
       this.search();
