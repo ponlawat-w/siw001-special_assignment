@@ -5,7 +5,7 @@ import { viewMethods } from './methods/views.js';
 import { itemMethods } from './methods/items.js';
 
 $(document).ready(() => {
-  var app = new Vue({
+  const app = new Vue({
     el: '#app',
     data: {
       loading: false,
@@ -17,14 +17,16 @@ $(document).ready(() => {
       pagination: null,
       view: 'list',
       map: null,
+      mapShowingPopUp: false,
       markersGroup: null,
       searchByLocation: false,
       searchLocations: [],
       selectedItem: {
         previewIndex: 0,
         resultItem: null,
-        fullDetail: null,
-        loading: false
+        detail: null,
+        loading: false,
+        map: null
       }
     },
     computed: {
@@ -46,6 +48,14 @@ $(document).ready(() => {
       if (this.view === 'map' && !this.map && document.getElementById('map')) {
         this.initiateMap();
       }
+      if (this.selectedItem.detail && this.selectedItem.detail.hasPlaces && document.getElementById('dialog-map')) {
+        this.initiateItemMap();
+      }
     }
+  });
+
+  $(document).on('click', '.popup-btn', function(event) {
+    const $target = $(event.target);
+    app.openItemFromId(decodeURI($target.attr('data-id')));
   });
 });

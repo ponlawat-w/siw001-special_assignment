@@ -2,26 +2,34 @@ import { CONFIG } from '../../../settings.js';
 import { Coordinate } from '../classes/coordinate.js';
 
 export const mapMethods = {
+  getDefaultMapLayer: function() {
+    return L.tileLayer(`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${CONFIG.mapboxAccessToken}`, {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox.streets',
+      accessToken: CONFIG.mapboxAccessToken
+    });
+  },
+  getDefaultMapView: function() {
+    return {
+      center: [40.4160447, -3.6971141],
+      zoom: 6
+    };
+  },
   initiateMap: function() {
     if (!this.map) {
-      this.map = L.map('map', {
-        center: [40.4160447, -3.6971141],
-        zoom: 6
-      });
+      this.map = L.map('map', this.getDefaultMapView());
 
       this.map.on('moveend', this.mapMoved.bind(this));
+      this.map.on('popupopen', this.mapPopUpOpen.bind(this));
+      this.map.on('popupclose', this.mapPopUpClose.bind(this));
 
-      this.map.addLayer(L.tileLayer(`https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${CONFIG.mapboxAccessToken}`, {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox.streets',
-        accessToken: CONFIG.mapboxAccessToken
-      }));
+      this.map.addLayer(this.getDefaultMapLayer());
       this.updateMarkers();
     }
   },
   mapMoved: function() {
-    if (this.searchByLocation) {
+    if (this.searchByLocation && !this.mapShowingPopUp) {
       const bounds = this.map.getBounds();
       const northEast = bounds.getNorthEast();
       const southWest = bounds.getSouthWest();
@@ -57,5 +65,11 @@ export const mapMethods = {
         this.map.fitBounds(this.markersGroup.getBounds());
       }
     }
+  },
+  mapPopUpOpen: function() {
+    this.mapShowingPopUp = true;
+  },
+  mapPopUpClose: function() {
+    this.mapShowingPopUp = false;
   }
 };

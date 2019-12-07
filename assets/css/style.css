@@ -31,9 +31,14 @@ body, * {
   height: 65vh;
 }
 
+#dialog-map {
+  width: 95%;
+  height: 300px;
+}
+
 .item-preview {
-  height: 60vh;
-  width: auto;
+  height: auto;
+  width: 50%;
 }
 
 .item-preview-thumbnail {

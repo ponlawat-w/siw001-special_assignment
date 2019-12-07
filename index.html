@@ -155,18 +155,25 @@
                   </div>
                 </div>
                 <h3>{{selectedItem.resultItem.title}}</h3>
-                <div class="small ml-5" v-if="selectedItem.resultItem.characteristicsText">
+                <div class="small ml-5 py-2" v-if="selectedItem.resultItem.characteristicsText">
                   {{selectedItem.resultItem.characteristicsText}}
                 </div>
                 <div v-if="selectedItem.loading">
                   <p>Loading…</p>
                 </div>
                 <div v-else-if="selectedItem.detail">
-                  <div v-for="concept in selectedItem.detail.concepts">
-                    <h5 v-if="concept.labels.length">・{{concept.labels.join(' ')}}</h5>
-                    <p v-for="note in concept.notes" class="text-justify">
-                      {{note}}
-                    </p>
+                  <div v-if="selectedItem.detail.hasPlaces">
+                    <h4>Locations</h4>
+                    <div class="mx-auto mb-3" id="dialog-map"></div>
+                  </div>
+                  <div v-if="selectedItem.detail.concepts && selectedItem.detail.concepts.length">
+                    <h4>Concepts</h4>
+                    <div v-for="concept in selectedItem.detail.concepts">
+                      <h5 v-if="concept.labels.length">・{{concept.labels.join(' ')}}</h5>
+                      <p v-for="note in concept.notes" class="text-justify">
+                        {{note}}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

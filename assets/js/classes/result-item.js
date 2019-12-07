@@ -113,7 +113,8 @@ export class ResultItem {
       const markers = [];
       for (let i = 0; i < coordinates.length; i++) {
         const marker = L.marker([coordinates[i].latitude, coordinates[i].longitude]);
-        marker.bindPopup(`${img}<div class="font-weight-bold">${this.title}</div>`, {
+        marker.bindPopup(`${img}<p class="font-weight-bold">${this.title}</p>`
+        + `<p><button type="button" class="btn btn-outline-dark popup-btn" data-id="${encodeURI(this.id)}">View Info</button></p>`, {
           maxWidth: 'auto'
         });
         markers.push(marker);
